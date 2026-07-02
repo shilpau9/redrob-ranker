@@ -1,8 +1,6 @@
 # Redrob Hackathon — Submission Metadata
-# Place this file at your GitHub repo root as submission_metadata.yaml
-
 # ============================================================================
-# Team identity  — FILL IN your real details before submitting
+# Team identity 
 # ============================================================================
 team_name: "DietCode"         
 
@@ -20,15 +18,13 @@ team_members:
 # Code and reproducibility
 # ============================================================================
 github_repo: "https://github.com/shilpau9/redrob-ranker"
-# ← replace with your actual repo URL
 
 sandbox_link: "https://colab.research.google.com/drive/17mRbYvbuvEp4-ONseUyBPtsrgLBfV3zy?usp=sharing"
-# ← replace with your actual Colab link — see Redrob_AI_Recruiter_App.ipynb
 
 reproduce_command: "python rank.py --candidates ./candidates.jsonl --out ./submission.csv"
 
 # ============================================================================
-# Compute environment  (update to match YOUR machine)
+# Compute environment  
 # ============================================================================
 compute:
   platform: "AMD Ryzen 7 5700U with Radeon Graphics (1.80 GHz)"
