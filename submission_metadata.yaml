@@ -1,0 +1,102 @@
+# Redrob Hackathon — Submission Metadata
+# Place this file at your GitHub repo root as submission_metadata.yaml
+
+# ============================================================================
+# Team identity  — FILL IN your real details before submitting
+# ============================================================================
+team_name: "DietCode"         
+
+primary_contact:
+  name: "Uppala Shilpa"            
+  email: "shilpauppala9@gmail.com"        
+  phone: "+91-9652110483"           
+
+team_members:
+  - name: "Uppala Shilpa"  
+    email: "shilpauppala9@gmail.com"        
+    role: "Solo participant"
+
+# ============================================================================
+# Code and reproducibility
+# ============================================================================
+github_repo: "https://github.com/shilpau9/redrob-ranker"
+# ← replace with your actual repo URL
+
+sandbox_link: "https://colab.research.google.com/drive/17mRbYvbuvEp4-ONseUyBPtsrgLBfV3zy?usp=sharing"
+# ← replace with your actual Colab link — see Redrob_AI_Recruiter_App.ipynb
+
+reproduce_command: "python rank.py --candidates ./candidates.jsonl --out ./submission.csv"
+
+# ============================================================================
+# Compute environment  (update to match YOUR machine)
+# ============================================================================
+compute:
+  platform: "AMD Ryzen 7 5700U with Radeon Graphics (1.80 GHz)"
+  cpu_cores: 8
+  ram_gb: 16
+  python_version: "3.12.3"
+  os: "Windows 11"
+  uses_gpu_for_inference: false          # true would violate the rules
+  has_network_during_ranking: false      # true would violate the rules
+  pre_computation_required: false        # no embeddings or model weights needed
+  pre_computation_time_minutes: 0
+  observed_runtime_seconds: 22           # measured on the above machine, 100K candidates
+
+# ============================================================================
+# AI tools declaration
+# ============================================================================
+ai_tools_used:
+  - "Claude"
+  - "Gemini"
+ai_usage_summary: |
+  Used Claude (claude.ai) for initial code scaffolding of the rank.py scoring
+  framework, honeypot pattern analysis (empirically verifying which signals distinguish 
+  fabricated profiles from legitimate ones against the full 100K dataset), and the 
+  original Flask web app concept. 
+  
+  Used Gemini for advanced engineering verification, logic/syntax auditing, and enterprise 
+  microservice hardening. Gemini identified critical multi-signal runtime vulnerabilities 
+  in the recruiter dashboard code (such as tuple subscription bugs, token boundary bleed anomalies, 
+  and loose substring matching false-positives), optimized file I/O operations through a 
+  thread-safe file-mtime state synchronization cache, and fully refactored the web application 
+  into a production-grade, asynchronous architecture powered by FastAPI, LangGraph, and Pydantic v2.
+
+  The final scoring weights, honeypot thresholds, and all design decisions were reviewed, 
+  tested, and tuned by the participant against the actual dataset (e.g., the >=10 expert-skill 
+  threshold was chosen after checking it produced zero false positives against the legitimate top-100). 
+  No candidate data was sent to any external LLM API during the ranking step that produces 
+  submission.csv — that step runs entirely offline. LLM or graph agent calls only occur in the 
+  optional web app's search/chat features, which are not part of the scored submission.
+  
+
+# ============================================================================
+# Approach summary
+# ============================================================================
+methodology_summary:
+  Rule-based multi-signal ranker (rank.py) with hardened honeypot detection, 
+  plus an optional, production-ready agentic UI application for exploration 
+  (not used in scoring). The ranker evaluates five weighted pillars: (1) Career 
+  quality—parsing historical job description text for retrieval/ranking 
+  keywords to isolate product-company AI tenure from legacy IT-services or 
+  pure research tracks and defeat keyword stuffers. (2) Skill match—30+ 
+  JD-critical skills weighted by proficiency and usage duration. (3) Experience 
+  years—targeting the 5-9yr sweet spot. (4) Location—India-first, Pune/Noida 
+  preferred. (5) Behavioral vectors as a multiplier—response rates, notice 
+  periods, and platform activity. Honeypot detection hard-excludes profiles 
+  exhibiting fabrication anomalies: >=10 expert skills (confirmed zero false 
+  positives in top-100), expert skills with 0 months of use, or severe date/YoE 
+  timeline divergence. Verified honeypot rate in final top-100: 0%. Plain-language 
+  Tier-5 candidates with completely irrelevant domains are excluded separately. 
+  Ranking runtime is ~22s on CPU for 100K candidates with zero network, GPU, 
+  or model weight dependencies. A separate FastAPI + LangGraph web application 
+  (main.py) provides an enterprise recruiter dashboard, isolating all LLM-driven 
+  search/chat features completely from the scored, network-compliant offline ranker.
+# ============================================================================
+# Declarations
+# ============================================================================
+declarations:
+  read_submission_spec: true
+  code_is_original_work: true
+  no_collusion: true
+  honeypot_check_done: true        # explicit honeypot detection in rank.py, verified 0/100
+  reproduction_tested: true        # rank.py produces valid CSV in ~22s

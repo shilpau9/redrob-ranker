@@ -1,0 +1,28 @@
+# Secrets
+.env
+*.pem
+*.key
+
+# Large data files — candidates.jsonl is 465 MB, do not commit
+candidates.jsonl
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# Colab / Jupyter
+.ipynb_checkpoints/
+*.ipynb~
+
+# macOS
+.DS_Store
+
+# ngrok
+.ngrok*

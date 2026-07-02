@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redrob AI Recruiter Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+
+    <nav class="bg-slate-900 text-white shadow-md px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <i class="fa-solid fa-robot text-teal-400 text-2xl"></i>
+            <span class="text-xl font-bold tracking-wide">Redrob AI Recruiter</span>
+        </div>
+        <div class="flex space-x-2" id="tab-group">
+            <button onclick="switchTab('rank')" id="btn-rank" class="px-4 py-2 rounded-md bg-teal-500 text-white font-medium transition shadow">Rank Pool</button>
+            <button onclick="switchTab('search')" id="btn-search" class="px-4 py-2 rounded-md hover:bg-slate-800 text-gray-300 transition">Smart Search</button>
+            <button onclick="switchTab('chat')" id="btn-chat" class="px-4 py-2 rounded-md hover:bg-slate-800 text-gray-300 transition">Recruiter Chat</button>
+            <button onclick="switchTab('trap')" id="btn-trap" class="px-4 py-2 rounded-md hover:bg-slate-800 text-gray-300 transition">Trap Inspector</button>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto p-6">
+        
+        <section id="sec-rank" class="space-y-6">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-wrap gap-4 items-end">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Min Experience (YoE)</label>
+                    <input type="number" id="filter-yoe" value="0" min="0" class="w-24 px-3 py-1.5 border rounded-md focus:ring-2 focus:ring-teal-400 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Min Score Target</label>
+                    <input type="number" id="filter-score" value="0" step="0.1" class="w-24 px-3 py-1.5 border rounded-md focus:ring-2 focus:ring-teal-400 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Location Filtering</label>
+                    <input type="text" id="filter-loc" placeholder="e.g. Pune" class="w-40 px-3 py-1.5 border rounded-md focus:ring-2 focus:ring-teal-400 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Availability</label>
+                    <select id="filter-avail" class="px-3 py-1.5 border rounded-md focus:ring-2 focus:ring-teal-400 outline-none">
+                        <option value="">All Candidates</option>
+                        <option value="open">Open To Work</option>
+                        <option value="imm">Immediate (≤15 days)</option>
+                        <option value="30">Quick (≤30 days)</option>
+                    </select>
+                </div>
+                <button onclick="loadCandidates()" class="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2 rounded-md font-medium transition shadow">Apply Filters</button>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-700 text-xs font-bold uppercase tracking-wider border-b border-gray-200">
+                            <th class="p-4 w-16 text-center">Rank</th>
+                            <th class="p-4">Candidate Profile</th>
+                            <th class="p-4 w-28 text-center">Scoring Component</th>
+                            <th class="p-4">System Algorithmic Reasoning</th>
+                        </tr>
+                    </thead>
+                    <tbody id="candidate-table-body" class="divide-y divide-gray-100 text-sm">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="sec-search" class="hidden space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h2 class="text-lg font-bold mb-2">Natural Language Candidate Discovery</h2>
+                <p class="text-sm text-gray-500 mb-4">Query the candidate pool naturally. The integrated model will cross-reference technical skills against historical match indices.</p>
+                <div class="flex gap-2">
+                    <input type="text" id="search-query" placeholder="e.g. Find me a developer with deep vector database matching experience who is immediately open to relocate" class="flex-1 px-4 py-2 border rounded-md focus:ring-2 focus:ring-teal-400 outline-none">
+                    <button onclick="executeSearch()" class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-md font-medium transition shadow">Search Pool</button>
+                </div>
+            </div>
+            <div id="search-results" class="space-y-4"></div>
+        </section>
+
+        <section id="sec-chat" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 h-[600px] flex flex-col">
+                <h3 class="font-bold border-b pb-2 mb-2 text-slate-700">Top Context Candidates</h3>
+                <div id="chat-sidebar-candidates" class="overflow-y-auto flex-1 space-y-2 text-xs text-gray-600">
+                    </div>
+            </div>
+            <div class="md:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 h-[600px] flex flex-col overflow-hidden">
+                <div id="chat-window" class="flex-1 p-4 overflow-y-auto bg-slate-50 space-y-4">
+                    <div class="bg-teal-100 text-teal-800 p-3 rounded-lg max-w-[80%] text-sm shadow-sm">
+                        Hi, I am your Recruiter Assistant. I have loaded the top-tier candidates along with verified metadata parameters. Ask me any filtering queries about the pool profile history!
+                    </div>
+                </div>
+                <div class="p-3 border-t bg-white flex gap-2">
+                    <input type="text" id="chat-input" placeholder="Ask about specific technical parameters or background comparisons..." class="flex-1 px-4 py-2 border rounded-md focus:ring-2 focus:ring-teal-400 outline-none" onkeypress="if(event.key === 'Enter') sendChatMessage()">
+                    <button onclick="sendChatMessage()" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2 rounded-md font-medium transition shadow"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </section>
+
+        <section id="sec-trap" class="hidden space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 text-center">
+                    <div class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Scanned Candidates</div>
+                    <div id="trap-scanned" class="text-3xl font-extrabold text-slate-800 mt-2">-</div>
+                </div>
+                <div class="bg-red-50 p-5 rounded-xl shadow-sm border border-red-100 text-center">
+                    <div class="text-xs font-bold text-red-400 uppercase tracking-wider">Honeypots Caught & Halted</div>
+                    <div id="trap-found" class="text-3xl font-extrabold text-red-600 mt-2">-</div>
+                </div>
+                <div class="bg-amber-50 p-5 rounded-xl shadow-sm border border-amber-100 text-center">
+                    <div class="text-xs font-bold text-amber-500 uppercase tracking-wider">Traps In Filtering Pool</div>
+                    <div id="trap-top100" class="text-3xl font-extrabold text-amber-600 mt-2">0</div>
+                </div>
+                <div class="bg-emerald-50 p-5 rounded-xl shadow-sm border border-emerald-100 text-center">
+                    <div class="text-xs font-bold text-emerald-500 uppercase tracking-wider">Clean Pipeline Rate</div>
+                    <div id="trap-rate" class="text-3xl font-extrabold text-emerald-600 mt-2">100%</div>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h3 class="text-lg font-bold text-slate-800 mb-3"><i class="fa-solid fa-shield-halved text-red-500 mr-2"></i>Automated Adversarial Honeypot Defense Report</h3>
+                <p class="text-sm text-gray-600 leading-relaxed mb-4">
+                    The rule-based processing firewall validates input JSON structures against profile fabrications. Candidates exhibiting keyword stuffing (e.g., ≥10 standalone expert skills), timeline gaps (>4 year experience divergence), or internal employment date calculation errors are cleanly purged prior to entering the downstream ranking calculation module.
+                </p>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        let currentTab = 'rank';
+        let chatHistory = [];
+
+        function switchTab(tabId) {
+            document.getElementById(`sec-${currentTab}`).classList.add('hidden');
+            document.getElementById(`btn-${currentTab}`).className = "px-4 py-2 rounded-md hover:bg-slate-800 text-gray-300 transition";
+            
+            currentTab = tabId;
+            document.getElementById(`sec-${currentTab}`).classList.remove('hidden');
+            document.getElementById(`btn-${currentTab}`).className = "px-4 py-2 rounded-md bg-teal-500 text-white font-medium transition shadow";
+        }
+
+        async function loadCandidates() {
+            const yoe = document.getElementById('filter-yoe').value;
+            const score = document.getElementById('filter-score').value;
+            const loc = document.getElementById('filter-loc').value;
+            const avail = document.getElementById('filter-avail').value;
+
+            const tbody = document.getElementById('candidate-table-body');
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center p-8 text-gray-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Querying ranked database structures...</td></tr>`;
+
+            try {
+                const res = await fetch(`/api/candidates?min_yoe=${yoe}&min_score=${score}&loc=${loc}&avail=${avail}`);
+                const data = await res.json();
+                
+                tbody.innerHTML = '';
+                if(data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" class="text-center p-8 text-gray-400">No matching clean pipeline candidates match your active filters.</td></tr>`;
+                    return;
+                }
+
+                data.forEach(c => {
+                    const skills = (c.skills || []).map(s => `<span class="bg-slate-100 border text-slate-700 text-xs px-2 py-0.5 rounded">${s.name || s}</span>`).join(' ');
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="p-4 font-bold text-center text-slate-500 border-r bg-slate-50/50">${c.rank}</td>
+                            <td class="p-4">
+                                <div class="font-bold text-slate-900">${c.profile?.anonymized_name || c.candidate_id}</div>
+                                <div class="text-xs text-gray-500 font-medium">${c.profile?.current_title || 'N/A'} @ ${c.profile?.current_company || 'N/A'}</div>
+                                <div class="text-xs text-slate-400 mt-1"><i class="fa-solid fa-location-dot mr-1"></i>${c.profile?.location || 'Unknown'} · ${c.profile?.years_of_experience || 0} Years Exp</div>
+                                <div class="flex flex-wrap gap-1 mt-2">${skills}</div>
+                            </td>
+                            <td class="p-4 text-center">
+                                <span class="bg-teal-50 text-teal-700 font-bold border border-teal-200 px-3 py-1 rounded-full text-xs">${Number(c.score).toFixed(4)}</span>
+                            </td>
+                            <td class="p-4 text-xs text-gray-600 leading-relaxed font-mono bg-slate-50/30">${c.reasoning || 'No algorithmic logs recorded.'}</td>
+                        </tr>
+                    `;
+                });
+
+                // Fill sidebar context list for chat if populated
+                if(currentTab === 'rank' || document.getElementById('chat-sidebar-candidates').children.length === 0) {
+                    const sidebar = document.getElementById('chat-sidebar-candidates');
+                    sidebar.innerHTML = data.slice(0, 15).map(c => `
+                        <div class="p-2 border rounded bg-slate-50 hover:bg-slate-100 transition cursor-pointer">
+                            <div class="font-bold text-slate-800">#${c.rank} - ${c.profile?.anonymized_name || c.candidate_id}</div>
+                            <div class="text-[10px] text-gray-500 truncate">${c.profile?.current_title || 'Engineer'}</div>
+                        </div>
+                    `).join('');
+                }
+            } catch(e) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center p-8 text-red-500 font-medium">Failed to establish communication with background microservices.</td></tr>`;
+            }
+        }
+
+        async function loadHoneypotStats() {
+            try {
+                const res = await fetch('/api/honeypots');
+                const data = await res.json();
+                document.getElementById('trap-scanned').innerText = data.total_scanned?.toLocaleString() || '0';
+                document.getElementById('trap-found').innerText = data.honeypots_found?.toLocaleString() || '0';
+            } catch(e) { console.error("Honeypot analytics collection interrupted.", e); }
+        }
+
+        async function executeSearch() {
+            const query = document.getElementById('search-query').value.trim();
+            if(!query) return;
+
+            const resultsDiv = document.getElementById('search-results');
+            resultsDiv.innerHTML = `<div class="text-center p-8 text-gray-400"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Running natural language query calculations...</div>`;
+
+            try {
+                const res = await fetch('/api/search', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({query: query})
+                });
+                const data = await res.json();
+                resultsDiv.innerHTML = '';
+
+                if(data.length === 0) {
+                    resultsDiv.innerHTML = `<div class="bg-white p-4 text-center text-gray-500 rounded border shadow-sm">No matched candidates mapping close proximity scores to your search parameters.</div>`;
+                    return;
+                }
+
+                data.forEach(c => {
+                    resultsDiv.innerHTML += `
+                        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow transition flex gap-4 items-start">
+                            <div class="bg-teal-50 border border-teal-300 text-teal-700 font-black px-3 py-2 rounded-lg text-sm text-center min-w-[70px]">
+                                <span class="text-[10px] block uppercase text-teal-500 tracking-tighter font-bold">Match</span>
+                                ${(Number(c.matchScore) * 100).toFixed(0)}%
+                            </div>
+                            <div class="flex-1">
+                                <div class="font-bold text-slate-900">${c.profile?.anonymized_name || c.candidate_id} <span class="text-xs font-normal text-slate-400 ml-2">(Pipeline Rank #${c.rank})</span></div>
+                                <div class="text-xs font-semibold text-teal-600 mt-0.5">${c.profile?.current_title || 'AI Specialist'} · ${c.profile?.location}</div>
+                                <div class="bg-slate-50 border border-slate-100 rounded-md p-3 mt-2 text-sm text-slate-700 italic">
+                                    "${c.explanation}"
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch(e) {
+                resultsDiv.innerHTML = `<div class="p-4 text-center text-red-500 font-medium bg-white rounded border">Vector context verification model timed out.</div>`;
+            }
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const msgText = input.value.trim();
+            if(!msgText) return;
+
+            input.value = '';
+            const chatWindow = document.getElementById('chat-window');
+
+            // Render User Turn Bubble
+            chatWindow.innerHTML += `
+                <div class="flex justify-end">
+                    <div class="bg-slate-800 text-white p-3 rounded-lg max-w-[80%] text-sm shadow-sm">
+                        ${msgText}
+                    </div>
+                </div>
+            `;
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+
+            chatHistory.push({role: 'user', content: msgText});
+
+            // Create target bubble for streaming response
+            const assistantId = 'ai-' + Date.now();
+            chatWindow.innerHTML += `
+                <div class="flex justify-start">
+                    <div id="${assistantId}" class="bg-teal-100 text-teal-900 p-3 rounded-lg max-w-[80%] text-sm shadow-sm">
+                        <i class="fa-solid fa-circle-notch fa-spin text-teal-600"></i>
+                    </div>
+                </div>
+            `;
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({history: chatHistory})
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder('utf-8');
+                let targetBubble = document.getElementById(assistantId);
+                targetBubble.innerText = ''; // Clear spinner loader
+                let fullAnswer = '';
+
+                while(true) {
+                    const {done, value} = await reader.read();
+                    if(done) break;
+
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+                    
+                    lines.forEach(line => {
+                        if(line.startsWith('data: ')) {
+                            const rawData = line.substring(6).trim();
+                            if(rawData === '[DONE]') return;
+                            try {
+                                const parsed = JSON.parse(rawData);
+                                if(parsed.text) {
+                                    fullAnswer += parsed.text;
+                                    targetBubble.innerText = fullAnswer;
+                                    chatWindow.scrollTop = chatWindow.scrollHeight;
+                                }
+                            } catch(err) { /* Catch incomplete boundary mutations safely */ }
+                        }
+                    });
+                }
+                chatHistory.push({role: 'assistant', content: fullAnswer});
+            } catch(e) {
+                document.getElementById(assistantId).innerText = "Pipeline stream connection was terminated unexpectedly.";
+            }
+        }
+
+        // Initialize Application Core Systems
+        window.onload = () => {
+            loadCandidates();
+            loadHoneypotStats();
+        };
+    </script>
+</body>
+</html>

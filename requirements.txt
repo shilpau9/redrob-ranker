@@ -1,0 +1,6 @@
+# rank.py dependencies — Python stdlib only, nothing to install
+# app.py dependencies (full-stack web app)
+flask>=3.1.0
+google-generativeai>=0.7.0
+pyngrok>=7.2.0      # only needed inside Colab; comment out for server deployments
+gunicorn>=22.0.0    # production WSGI server (not needed for Colab / local dev)
