@@ -16,6 +16,7 @@ submission and not part of the scored pipeline — it's a demo of what a
 production recruiter tool built on top of the ranker could look like.
 
 ## Files
+Working Video Link : https://drive.google.com/file/d/1kr217hvwHmUzi1Tgidhg_90IeH6XufCj/view?usp=sharing
 
 | File | Purpose |
 |------|---------|
